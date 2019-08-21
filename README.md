@@ -1,28 +1,37 @@
 # Computer Aided Ideation: Prototype Discovery using Quality-Diversity
 
-## Literature references
+This software shows how quality diversity algorithms can be used for (interactive) computer aided ideation. 
+
+It includes: 
+- Matlab demo (demo.m)
+- Demo GUI (demoGUItabs.mlapp) created with Matlab Appdesigner (2019a)
+- Standalone application (needs Matlab Runtime, see demoGUItabs/for_redistribution)
 
 Please include the following references in any publication using this code. For Bibtex please see the end of this file.
 
 Hagg, A., Asteroth, A. and Bäck, T., 2018, September. Prototype discovery using quality-diversity. In International Conference on Parallel Problem Solving from Nature (pp. 500-511). Springer, Cham.
 Hagg, A., Asteroth, A. and Bäck, T., 2019, July. Modeling user selection in quality diversity. In Proceedings of the Genetic and Evolutionary Computation Conference (pp. 116-124). ACM.
 
+
 ## Before you begin
 - Code was written for Matlab 2019a
 - Please compile /similarity/bhtsne. In order to do so, please follow the /classes/bhtsne/README.md
+
 
 ## Examples
 - demoGUItabs.mlapp     -   the GUI as a Matlab application
 - ... contains a standalone version of the GUI that you can use after installing the Matlab runtime
 - demo.m                -   non-GUI code usage example
 
+
 ## Documentation
 - More explanation about the function headers is provided in every file, which can be accessed using "help <functionname>"
+
 
 ## How to add a domain
 Add a domain folder in domain/. Please use the same structure and naming conventions as in domain/npoly_ffd. The utils folder can contain some domain-specific functions. 
 
-The following functions are expected:  
+The following functions are expected:
 
 categorize.m        -   phenotypic features that can be extracted from a phenotype in this domain
 domain.m            -   parameterization of the domain
@@ -30,9 +39,17 @@ getPhenotype.m      -   create phenotype based on genome
 showExample.m       -   visualize phenotype
 validate.m          -   can contain validation of known (non-user-selection) validity constraints. 
 
+## Code Structure
+classification	    - 	Create similarity space with Barnes-Hut t-SNE and k-medoids clustering
+			& extract prototypes (medoid, per class)
+constraints	    - 	Create a model of user selection in context of similarity space
+domain		    - 	Contains domain specifications
+models		    - 	Create models and predict with models using GPML library
+QD		    - 	Variations of quality diversity algorithms: MAP-Elites (grid) or voronoi-
+ 			Elites (voronoi)
+
 
 ## Bibtex entrees
-
 @inproceedings{hagg2018prototype,
   title={Prototype discovery using quality-diversity},
   author={Hagg, Alexander and Asteroth, Alexander and B{\"a}ck, Thomas},
