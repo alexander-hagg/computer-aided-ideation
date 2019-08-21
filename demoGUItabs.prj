@@ -7,8 +7,8 @@
     <param.authnamewatermark>Alexander Hagg</param.authnamewatermark>
     <param.email>alexander.hagg@h-brs.de</param.email>
     <param.company>Bonn-Rhein-Sieg University o.a.s.</param.company>
-    <param.summary>Computer Aided Ideation: Prototype Discovery using Quality-Diversity</param.summary>
-    <param.description>This software shows how quality diversity algorithms can be used for (interactive) computer aided ideation.</param.description>
+    <param.summary />
+    <param.description />
     <param.screenshot />
     <param.guid />
     <param.installpath.string>/Bonn-Rhein-Sieg_University_o.a.s./demoGUItabs/</param.installpath.string>
@@ -54,14 +54,16 @@ ${LD_LIBRARY_PATH}:MR/v96/runtime/glnxa64:MR/v96/bin/glnxa64:MR/v96/sys/os/glnxa
 	 
  Input Arguments 
 	 -?  print help on how to use the application 
-	 input arguments 
- Description 
- 	 This software shows how quality diversity algorithms can be used for (interactive) computer aided ideation.</param.help.text>
+	 input arguments</param.help.text>
     <unset>
       <param.icon />
       <param.icons />
       <param.version />
+      <param.authnamewatermark />
+      <param.email />
       <param.company />
+      <param.summary />
+      <param.description />
       <param.screenshot />
       <param.guid />
       <param.installpath.string />
