@@ -17,7 +17,7 @@ function p = defaultParamSet(varargin)
 p.numInitSamples            = 2^6;      % number of initial samples
 p.nGens                     = 2^8;       % number of generations
 p.nChildren                 = 2^5;      % number of children per generation
-p.mutSigma                  = 0.2;      % mutation drawn from Gaussian distribution with this \sigma
+p.mutSigma                  = 0.1;      % mutation drawn from Gaussian distribution with this \sigma
 %p.maxBins                   = 2^3;     % not used yet but intention is to
                                         % enable adjusting feature resolution 
                                         % based on number of requested bins to

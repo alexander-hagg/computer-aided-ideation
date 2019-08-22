@@ -86,12 +86,14 @@ cla(figHandleTotalFit);
 plot(figHandleTotalFit,fitnessTotal./numElements,'LineWidth',2);
 axis(figHandleTotalFit,[0 iGen 0 1]);
 grid(figHandleTotalFit,'on');
+title(['Total Fitness (QD Fitness)']);
 
 if sum(driftMean(:)) > 0
     cla(figHandleMeanDrift);
     plot(figHandleMeanDrift,driftMean,'LineWidth',2);
     axis(figHandleMeanDrift,[0 iGen 0 1]);
     grid(figHandleMeanDrift,'on');
+    title(['User Selection Drift']);    
 end
 
 drawnow;

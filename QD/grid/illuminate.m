@@ -28,9 +28,9 @@ function [map, percImproved, percValid, allMaps, percFilled, fitnessMean, driftM
 %------------- BEGIN CODE --------------
 
 % View Initial Map
-if nargin > 4; figHandleMap = varargin{1};else;figHandleMap = figure(1);end
-if nargin > 5; figHandleTotalFit = varargin{2};else;figHandleTotalFit = figure(2);end
-if nargin > 6; figHandleMeanDrift = varargin{3};else;figHandleMeanDrift = figure(3);end
+if nargin > 4; figHandleMap = varargin{1};else;f=figure(1);clf(f);figHandleMap = axes; end
+if nargin > 5; figHandleTotalFit = varargin{2};else;f=figure(2);clf(f);figHandleTotalFit = axes;end
+if nargin > 6; figHandleMeanDrift = varargin{3};else;f=figure(3);clf(f);figHandleMeanDrift = axes;end
 
 if p.display.illu
     cla(figHandleMap);cla(figHandleTotalFit);cla(figHandleMeanDrift);
@@ -98,12 +98,14 @@ cla(figHandleTotalFit);
 plot(figHandleTotalFit,fitnessTotal./numElements,'LineWidth',2);
 axis(figHandleTotalFit,[0 iGen 0 1]);
 grid(figHandleTotalFit,'on');
+title(figHandleTotalFit,['Total Fitness (QD Fitness)']);
 
 if sum(driftMean(:)) > 0
     cla(figHandleMeanDrift);
     plot(figHandleMeanDrift,driftMean,'LineWidth',2);
     axis(figHandleMeanDrift,[0 iGen 0 1]);
     grid(figHandleMeanDrift,'on');
+    title(figHandleMeanDrift,['User Selection Drift']);
 end
 
 drawnow;
