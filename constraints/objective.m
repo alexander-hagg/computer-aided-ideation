@@ -27,8 +27,10 @@ function [adjustedFitness, values, phenotypes] = objective(samples, evalFcn, con
 %------------- BEGIN CODE --------------
 vis = false;
 if nargin > 5
-    figHandle = varargin{1};
-    vis = true;
+    if ~isempty(varargin{1})
+        figHandle = varargin{1};
+        vis = true;
+    end
 end
 
 [fitness,values,phenotypes] = evalFcn(samples);

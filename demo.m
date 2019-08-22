@@ -17,7 +17,7 @@
 clear;clc;
 DOF = 16;
 DOMAIN = 'npoly_ffd';
-ALGORITHM = 'grid'; % 'grid', 'voronoi'
+ALGORITHM = 'voronoi';
 nIters = 2;
 nPrototypes = 10;
 
@@ -29,32 +29,15 @@ app.d{iter} = domain(DOF);
 rmpath('QD/grid'); rmpath('QD/voronoi'); addpath(['QD/' ALGORITHM]);
 app.p{iter} = defaultParamSet(4);
 
-% Initialize samples
-sobSequence         = scramble(sobolset(app.d{iter}.dof,'Skip',1e3),'MatousekAffineOwen');
-sobPoint            = 1;
-initSamples         = range(app.d{iter}.ranges).*sobSequence(sobPoint:(sobPoint+app.p{iter}.numInitSamples)-1,:)+app.d{iter}.ranges(1);
-fitfun = @(x) objective(x,app.d{iter}.fitfun,[],app.p{iter}.penaltyWeight,app.p{iter}.driftThreshold);
-
 %% Main loop
 for iter=1:nIters
     disp(['Iteration: ' int2str(iter)]);
-    if ~isempty(app.constraints)
-        disp(['Adding constraints to the fitness function']);
-        fitfun = @(x) objective(x,app.d{iter}.fitfun,app.constraints,app.p{iter}.penaltyWeight,app.p{iter}.driftThreshold);
-        initSamples = [];
-        for it1=1:length(app.constraints)
-            initSamples = [initSamples; app.constraints{it1}.members];
-        end
-    end
-    % I) Illumination with QD
-    disp(['Illumination']);
-    [fitness, values, phenotypes]       = fitfun(initSamples); %
-    obsMap                              = createMap(app.d{iter}, app.p{iter});
-    [replaced, replacement, features]   = nicheCompete(initSamples, fitness, phenotypes, obsMap, app.d{iter}, app.p{iter});
-    obsMap                              = updateMap(replaced,replacement,obsMap,fitness,initSamples,values,features,app.p{iter}.extraMapValues);
-    [app.map{iter}, ~, ~, ~, ~]         = illuminate(fitfun,obsMap,app.p{iter},app.d{iter});
     
-    % II) Extract prototypes
+    %% I) Illumination with QD
+    disp(['Illumination']);
+    [app.map{iter}, ~, ~, ~, ~]         = illuminate(app.constraints,app.p{iter},app.d{iter});
+    
+    %% II) Extract prototypes
     disp(['Similarity space and prototype extraction']);
     [app.classification{iter}, simspace] = extractClasses(app.map{iter}.genes,[],'kmedoids',nPrototypes);
     % Show classes in similarity space
@@ -66,11 +49,11 @@ for iter=1:nIters
     end
     f=figure(5);clf(f);figHandle=axes;cla(figHandle);showPhenotype(figHandle,app.d{iter},app.classification{iter}.protoX,placement);title(figHandle,'Prototypes');
     
-    % III) Selection procedure
+    %% III) Selection procedure
     prompt = 'Please select a prototype by entering an integer ID (bottom left to upper right: ';
     app.selectedPrototypes{iter} = input(prompt);
     
-    % IV) Create UDHM based on selected prototypes
+    %% IV) Create UDHM based on selected prototypes
     if length(app.selectedPrototypes) >= iter && ~isempty(app.selectedPrototypes{iter})
         app.constraints{iter} = setConstraints(app.classification{iter},app.selectedPrototypes{iter},[],'class');
         % Initialize configuration for next iteration
