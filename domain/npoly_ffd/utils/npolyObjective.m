@@ -23,7 +23,8 @@ function [fitness,phenotypes] = npolyObjective(genomes,phenotypes)
 
 fitness = zeros(length(phenotypes),1);
 for i=1:length(phenotypes)
-    if phenotypes{i}.NumRegions == 0
+    % Return NaN for invalid phenotypes
+    if isa(phenotypes{i},'double') || phenotypes{i}.NumRegions == 0
         fitness(i) = nan;
     else
         % Radial Symmetry

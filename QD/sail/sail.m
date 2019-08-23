@@ -1,4 +1,4 @@
-function predMap = sail(map,fitnessFunction,p,d,varargin)
+function predMap = sail(acqMap,fitnessFunction,p,d,varargin)
 %SAIL - Surrogate Assisted Illumination Algorithm
 % Main run script of SAIL algorithm
 %
@@ -6,20 +6,29 @@ function predMap = sail(map,fitnessFunction,p,d,varargin)
 % Bonn-Rhein-Sieg University of Applied Sciences (HBRS)
 % email: adam.gaier@h-brs.de, alexander.hagg@h-brs.de
 % Nov 2016; Last revision: 23-Aug-2019
+if p.display.illu
+    if nargin > 4; figHandleAcqMap = varargin{1};else;f=figure(4);clf(f);figHandleAcqMap = axes; end
+    title(figHandleAcqMap,'Acquisition Fcn Values'); drawnow;
+    if nargin > 5; figHandleMap = varargin{2};else;f=figure(1);clf(f);figHandleMap = axes; end
+    if nargin > 6; figHandleTotalFit = varargin{3};else;f=figure(2);clf(f);figHandleTotalFit = axes;end
+    if nargin > 7; figHandleMeanDrift = varargin{4};else;f=figure(3);clf(f);figHandleMeanDrift = axes;end
+    
+end
 
 p.infill = infillParamSet;
 
 p.predMapResolution = p.featureResolution;
 p.featureResolution = p.infill.featureResolution;
 
-observation = reshape(map.genes,[],d.dof);
+observation = reshape(acqMap.genes,[],d.dof);
 valid = all(~isnan(observation)');
 observation = observation(valid,:);
 nSamples = size(observation,1);
 p.numInitSamples = nSamples; %Reduce to valid solutions ... bit hacky
-fitness = reshape(map.fitness,numel(valid),[]);
-fitness = fitness(valid,:);
+trueFitness = reshape(acqMap.fitness,numel(valid),[]);
+trueFitness = trueFitness(valid,:);
 
+parents = observation;
 p.infill.modelParams = paramsGP(size(observation,2));
 while nSamples <= p.infill.nTotalSamples
     %% 1 - Create Surrogate and Acquisition Function 
@@ -30,7 +39,7 @@ while nSamples <= p.infill.nTotalSamples
     if (nSamples==p.numInitSamples || mod(nSamples,p.infill.trainingMod*p.infill.nAdditionalSamples))
         p.infill.model.functionEvals = 100;
     end
-    model = trainGP(observation,fitness,p.infill.modelParams);
+    model = trainGP(observation,trueFitness,p.infill.modelParams);
     
     % Save found model parameters and new acquisition function
     %for iModel=1:size(value,2)
@@ -50,21 +59,20 @@ while nSamples <= p.infill.nTotalSamples
     
     % Evaluate data set with acquisition function
     try
-        [fitness,values,phenotypes] = acqFunction(observation);
+        [fitness,values,phenotypes] = acqFunction(parents);
     catch exception
         disp(exception.identifier);
     end
     
-    %map = updateMap(replaced,replacement,map,fitness,initSamples,values,features,p.extraMapValues);
     % Place Best Samples in Map with Acquisition Fitness
-    obsMap = createMap(d,p);
-    [replaced, replacement, features] = nicheCompete(observation, fitness, phenotypes, obsMap, d, p);
-    obsMap = updateMap(replaced,replacement,obsMap,fitness,observation,...
+    acqMap = createMap(d,p);
+    [replaced, replacement, features] = nicheCompete(parents, fitness, phenotypes, acqMap, d, p);
+    acqMap = updateMap(replaced,replacement,acqMap,fitness,parents,...
                         values,features, p.extraMapValues);
     
     % Illuminate with QD (but no visualization)
     acqCfg = p;acqCfg.display.illu = false;
-    acqMap = illuminate(obsMap,acqFunction,acqCfg,d);
+    acqMap = illuminate(acqMap,acqFunction,acqCfg,d);
 
     %% 3 - Select Infill Samples
     % The next samples to be tested are chosen from the acquisition map: a
@@ -117,7 +125,7 @@ while nSamples <= p.infill.nTotalSamples
         
         % Precise evaluation
         if ~isempty(nextGenes)
-            measuredValue = fitnessFunction(nextGenes, d.fitfun);
+            measuredValue = fitnessFunction(nextGenes,d.fitfun,0);
             % Assign found values
             newValue(nanIndx,:) = measuredValue;
         end
@@ -143,12 +151,16 @@ while nSamples <= p.infill.nTotalSamples
     end
     
     % Add evaluated solutions to data set
-    fitness = cat(1,fitness,newValue);
+    trueFitness = cat(1,trueFitness,newValue);
     observation = cat(1,observation,nextObservation);
     nSamples  = size(observation,1);
     
     % Assign new samples to parent pool as well
-    %observation = cat(1,observation,nextObservation);
+    parents = cat(1,parents,nextObservation);
+    
+    if p.display.illu% && (~mod(iGen,p.display.illuMod) || (iGen==p.nGens))
+        visualizeStats(figHandleAcqMap,acqMap,d,nSamples);
+    end
     
 end % end acquisition loop
 
@@ -156,9 +168,16 @@ end % end acquisition loop
 % Create prediction map
 disp(['PE ' int2str(nSamples) ' | Training Prediction Models']); 
 p.infill.modelParams.functionEvals = 100;
-modelPred = trainGP(observation,fitness,p.infill.modelParams);
-
-[predMap] = createPredictionMap(modelPred,fitnessFunction,p,d,'featureRes',p.predMapResolution);
+modelPred = trainGP(observation,trueFitness,p.infill.modelParams);
+[predMap] = createPredictionMap(modelPred,fitnessFunction,p,d,figHandleMap,figHandleTotalFit,figHandleMeanDrift);
 
 end
 
+
+function visualizeStats(figHandle,map,d,nSamples)
+cla(figHandle);
+caxis(figHandle,[0 max(map.fitness(:))]);
+viewMap(map,d,figHandle);
+title(figHandle,['Predicted Acquisition Fitness w. ' int2str(nSamples) ' samples']);
+drawnow;
+end

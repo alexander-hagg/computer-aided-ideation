@@ -56,7 +56,7 @@ while (iGen <= p.nGens)
     else
         percValid(iGen) = 1;
     end
-    [fitness, values, phenotypes] = fitnessFunction(children,d.fitfun);
+    [fitness, values, phenotypes] = fitnessFunction(children);
     
     %% Add Children to Map
     [replaced, replacement, features] = nicheCompete(children,fitness,values{end},map,d,p);

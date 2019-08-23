@@ -15,7 +15,7 @@ function p = defaultParamSet(varargin)
 %
 %------------- BEGIN CODE --------------
 
-p.numInitSamples            = 2^6;      % number of initial samples
+p.numInitSamples            = 2^5;      % number of initial samples
 p.nGens                     = 2^8;       % number of generations
 p.nChildren                 = 2^5;      % number of children per generation
 p.mutSigma                  = 0.1;      % mutation drawn from Gaussian distribution with this \sigma

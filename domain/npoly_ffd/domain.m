@@ -50,6 +50,9 @@ d.base = [theta;rho];
 % Fitness function
 d.fitfun                    = @(geno,pheno) npolyObjective(geno,pheno);
 d.fitnessRange              = [0 1];
+% Weight for acquisition function during surrogate-assisted QD
+d.varCoef                   = 50; % This might be domain dependent. 
+                                  % More complex-to-model domains will have a higher variance and thus might need a lower weight value. 
 
 % Genotypic ranges
 d.ranges          = [-1 1];

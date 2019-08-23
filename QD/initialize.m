@@ -1,10 +1,19 @@
-function [map,fitnessFunction] = initialize(constraints,d,p)
+function [map,fitnessFunction] = initialize(constraints,d,p,surrogateAssistance)
 %INITIALIZE Initialize samples, fitness function, including constraints
 
-fitnessFunction = @(x,fitfun) objective(x,fitfun,d,[],p.penaltyWeight,p.driftThreshold);
+if surrogateAssistance
+    fitnessFunction = @(x,fitfun,varCoef) objective(x,fitfun,d,[],p.penaltyWeight,p.driftThreshold,varCoef);
+else
+    fitnessFunction = @(x) objective(x,d.fitfun,d,[],p.penaltyWeight,p.driftThreshold,0);
+end
+
 if ~isempty(constraints)
     disp(['Adding constraints to the fitness function']);
-    fitnessFunction = @(x,fitfun) objective(x,d.fitfun,d,constraints,p.penaltyWeight,p.driftThreshold);
+    if surrogateAssistance
+        fitnessFunction = @(x,fitfun,varCoef) objective(x,fitfun,d,constraints,p.penaltyWeight,p.driftThreshold,varCoef);
+    else
+        fitnessFunction = @(x) objective(x,d.fitfun,d,constraints,p.penaltyWeight,p.driftThreshold,0);
+    end
     initSamples = [];
     for it1=1:length(constraints)
         initSamples = [initSamples; constraints{it1}.members];
@@ -15,7 +24,11 @@ else
     sobPoint            = 1;
     initSamples         = range(d.ranges).*sobSequence(sobPoint:(sobPoint+p.numInitSamples)-1,:)+d.ranges(1);
 end
-[fitness, values, phenotypes]       = fitnessFunction(initSamples,d.fitfun); 
+if surrogateAssistance
+    [fitness, values, phenotypes]       = fitnessFunction(initSamples,d.fitfun,d.varCoef); 
+else
+    [fitness, values, phenotypes]       = fitnessFunction(initSamples); 
+end
 
 map                                 = createMap(d, p);
 [replaced, replacement, features]   = nicheCompete(initSamples, fitness, phenotypes, map, d, p);

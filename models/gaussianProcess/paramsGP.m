@@ -24,8 +24,8 @@ function p = paramsGP(nInputs)
 %------------- BEGIN CODE --------------
 p.name = 'GP';
 
-p.covfunc   = @covSEard;             
-p.hyp.cov   = [zeros(nInputs,1);0]; % (unit vector in log space)
+p.covfunc   = @covSEiso;             
+p.hyp.cov   = [0;0]; % (unit vector in log space)
 
 p.meanfunc  = {@meanConst};  
 p.hyp.mean  = 0;

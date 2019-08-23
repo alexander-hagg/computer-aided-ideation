@@ -25,25 +25,29 @@ function [adjustedFitness, values, phenotypes] = objective(samples, evalFcn, d, 
 % Nov 2018; Last revision: 15-Aug-2019
 %
 %------------- BEGIN CODE --------------
-vis = false;
-if nargin > 6
-    if ~isempty(varargin{1})
-        figHandle = varargin{1};
-        vis = true;
-    end
-end
-
 phenotypes = getPhenotype(samples,d);
 
-% First case: evalFcn is the prediction created by surrogate model
-if isa(evalFcn,'double')
+% First case: evalFcn is the prediction created by surrogate model, hence
+% we also need the variance to determine acquisition value
+if nargin > 6 && isa(evalFcn,'double')
+    varCoef = varargin{1};
     fitness = evalFcn(:,1)';
+    variance = evalFcn(:,2)';
+    fitness = fitness + (varCoef * variance); % Upper Confidence Bound Sampling
 else
     fitness = evalFcn(samples,phenotypes);
 end
 
-offSetScalar = 1.1;
+% Check whether to visualize
+vis = false;
+if nargin > 7
+    if ~isempty(varargin{2})
+        figHandle = varargin{2};
+        vis = true;
+    end
+end
 
+offSetScalar = 1.1;
 fitnessAdjustment = ones(size(samples,1),1);
 outOfBounds = false(size(samples,1),1);
 drift = zeros(size(samples,1),1);

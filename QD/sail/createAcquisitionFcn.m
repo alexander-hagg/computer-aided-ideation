@@ -19,7 +19,7 @@ function acqFunction = createAcquisitionFcn(fitnessFunction,model,d)
 
 %------------- BEGIN CODE --------------
 
-acqFunction = @(x,d) fitnessFunction( x, feval('predictGP', model, x));
+acqFunction = @(x) fitnessFunction( x, feval('predictGP', model, x), d.varCoef);
 
 %[adjustedFitness, values, phenotypes]
 %------------- END OF CODE --------------
