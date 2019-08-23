@@ -1,4 +1,4 @@
-% demo - demo run of PRODUQD
+% demoQD - demo run of PRODUQD with surrogate assistance
 %
 % Computer Aided Ideation: Prototype Discovery using Quality-Diversity
 %
@@ -17,7 +17,7 @@
 clear;clc;
 DOF = 16;
 DOMAIN = 'npoly_ffd';
-ALGORITHM = 'voronoi';
+ALGORITHM = 'grid';
 nIters = 2;
 nPrototypes = 10;
 
@@ -35,7 +35,18 @@ for iter=1:nIters
     
     %% I) Illumination with QD
     disp(['Illumination']);
-    [app.map{iter}, ~, ~, ~, ~]         = illuminate(app.constraints,app.p{iter},app.d{iter});
+    
+    [map,fitnessFunction] = initialize(app.constraints,app.d{iter},app.p{iter},true);
+    app.map{iter} = sail(map,fitnessFunction,app.p{iter},app.d{iter});
+    %fitnessFunction
+    predictedOptima = reshape(app.map{iter}.genes,[],app.d{iter}.dof);
+    trueFitness = fitnessFunction(predictedOptima,app.d{iter}.fitfun,0);
+    trueMap = app.map{iter};
+    trueMap.fitness = reshape(trueFitness,size(map.fitness,1),size(map.fitness,2));
+    figure;axesTrueFitness=axes;
+    viewMap(trueMap,app.d{iter},axesTrueFitness);
+    title(app.UIAxesTrueFitness,'Predicted Fitness');
+    
     
     %% II) Extract prototypes
     disp(['Similarity space and prototype extraction']);
@@ -61,7 +72,7 @@ for iter=1:nIters
         app.d{iter} = app.d{iter-1};
         app.p{iter} = app.p{iter-1};
         
-        f=figure(6);clf(f);figHandle=axes;cla(figHandle); showHistory(app.constraints,app.classification,app.d{iter},figHandle); 
+        f=figure(6);clf(f);figHandle=axes;cla(figHandle); showHistory(app.constraints,app.classification,app.d{iter},figHandle);
     end
 end
 %------------- END CODE --------------
