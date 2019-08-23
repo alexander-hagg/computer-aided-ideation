@@ -38,14 +38,13 @@ for iter=1:nIters
     
     [map,fitnessFunction] = initialize(app.constraints,app.d{iter},app.p{iter},true);
     app.map{iter} = sail(map,fitnessFunction,app.p{iter},app.d{iter});
-    %fitnessFunction
     predictedOptima = reshape(app.map{iter}.genes,[],app.d{iter}.dof);
     trueFitness = fitnessFunction(predictedOptima,app.d{iter}.fitfun,0);
     trueMap = app.map{iter};
-    trueMap.fitness = reshape(trueFitness,size(map.fitness,1),size(map.fitness,2));
+    trueMap.fitness = reshape(trueFitness,size(app.map{iter}.fitness,1),size(app.map{iter}.fitness,2));
     figure;axesTrueFitness=axes;
     viewMap(trueMap,app.d{iter},axesTrueFitness);
-    title(app.UIAxesTrueFitness,'Predicted Fitness');
+    title(app.UIAxesTrueFitness,'True Fitness');
     
     
     %% II) Extract prototypes

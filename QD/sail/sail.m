@@ -169,6 +169,7 @@ end % end acquisition loop
 disp(['PE ' int2str(nSamples) ' | Training Prediction Models']); 
 p.infill.modelParams.functionEvals = 100;
 modelPred = trainGP(observation,trueFitness,p.infill.modelParams);
+p.featureResolution = p.predMapResolution;
 [predMap] = createPredictionMap(modelPred,fitnessFunction,p,d,figHandleMap,figHandleTotalFit,figHandleMeanDrift);
 
 end
