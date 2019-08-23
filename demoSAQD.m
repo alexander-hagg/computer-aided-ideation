@@ -44,7 +44,8 @@ for iter=1:nIters
     trueMap.fitness = reshape(trueFitness,size(app.map{iter}.fitness,1),size(app.map{iter}.fitness,2));
     figure;axesTrueFitness=axes;
     viewMap(trueMap,app.d{iter},axesTrueFitness);
-    title(app.UIAxesTrueFitness,'True Fitness');
+    title(axesTrueFitness,'True Fitness');
+    caxis(axesTrueFitness,[0 1]);
     
     
     %% II) Extract prototypes
