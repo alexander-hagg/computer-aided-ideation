@@ -4,8 +4,8 @@
 %
 % Please include the following references in any publication using this code. For Bibtex please see the end of this file.
 %
-%Hagg, A., Asteroth, A. and B??ck, T., 2018, September. Prototype discovery using quality-diversity. In International Conference on Parallel Problem Solving from Nature (pp. 500-511). Springer, Cham.
-%Hagg, A., Asteroth, A. and B??ck, T., 2019, July. Modeling user selection in quality diversity. In Proceedings of the Genetic and Evolutionary Computation Conference (pp. 116-124). ACM.
+%Hagg, A., Asteroth, A. and B?ck, T., 2018, September. Prototype discovery using quality-diversity. In International Conference on Parallel Problem Solving from Nature (pp. 500-511). Springer, Cham.
+%Hagg, A., Asteroth, A. and B?ck, T., 2019, July. Modeling user selection in quality diversity. In Proceedings of the Genetic and Evolutionary Computation Conference (pp. 116-124). ACM.
 %
 % Author: Alexander Hagg
 % Bonn-Rhein-Sieg University of Applied Sciences (HBRS)

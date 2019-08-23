@@ -1,4 +1,4 @@
-function [map, percImproved, percValid, allMaps, percFilled] = illuminate(constraints,p,d,varargin)
+function [map, percImproved, percValid, allMaps, percFilled] = illuminate(map,fitnessFunction,p,d,varargin)
 %illuminate - QD with Voronoi Multi-dimensional Archive of Phenotypic Elites algorithm
 %
 % Syntax:  [map, percImproved, percValid, h, allMaps, percFilled] = illuminate(fitnessFunction,map,p,d,varargin)
@@ -27,30 +27,9 @@ function [map, percImproved, percValid, allMaps, percFilled] = illuminate(constr
 
 %------------- BEGIN CODE --------------
 % View Initial Map
-simspaceaxes = []; if nargin > 3; simspaceaxes = varargin{1};end
-if nargin > 4; figHandleMap = varargin{2};else;f=figure(1);clf(f);figHandleMap = axes; end
-if nargin > 5; figHandleTotalFit = varargin{3};else;f=figure(2);clf(f);figHandleTotalFit = axes;end
-if nargin > 6; figHandleMeanDrift = varargin{4};else;f=figure(3);clf(f);figHandleMeanDrift = axes;end
-
-fitnessFunction = @(x) objective(x,d.fitfun,[],p.penaltyWeight,p.driftThreshold,simspaceaxes);
-if ~isempty(constraints)
-    disp(['Adding constraints to the fitness function']);
-    fitnessFunction = @(x) objective(x,d.fitfun,constraints,p.penaltyWeight,p.driftThreshold,simspaceaxes);
-    initSamples = [];
-    for it1=1:length(constraints)
-        initSamples = [initSamples; constraints{it1}.members];
-    end
-else
-    disp(['Initializing space filling sample set']);
-    sobSequence         = scramble(sobolset(d.dof,'Skip',1e3),'MatousekAffineOwen');
-    sobPoint            = 1;
-    initSamples         = range(d.ranges).*sobSequence(sobPoint:(sobPoint+p.numInitSamples)-1,:)+d.ranges(1);
-end
-[fitness, values, phenotypes]       = fitnessFunction(initSamples); %
-
-map                                 = createMap(d, p);
-[replaced, replacement, features]   = nicheCompete(initSamples, fitness, phenotypes, map, d, p);
-map                                 = updateMap(replaced,replacement,map,fitness,initSamples,values,features,p.extraMapValues);
+if nargin > 4; figHandleMap = varargin{1};else;f=figure(1);clf(f);figHandleMap = axes; end
+if nargin > 5; figHandleTotalFit = varargin{2};else;f=figure(2);clf(f);figHandleTotalFit = axes;end
+if nargin > 6; figHandleMeanDrift = varargin{3};else;f=figure(3);clf(f);figHandleMeanDrift = axes;end
 
 if p.display.illu; viewMap(map,d,figHandleMap); title(figHandleMap,'Fitness'); caxis(figHandleMap,[0 1]);drawnow;end
 
@@ -68,7 +47,7 @@ while (iGen <= p.nGens)
     end
     children = children(1:p.nChildren,:);
     
-    [fitness, values, phenotypes] = fitnessFunction(children); %% TODO: Speed up without anonymous functions
+    [fitness, values, phenotypes] = fitnessFunction(children,d.fitfun); %% TODO: Speed up without anonymous functions
     
     %% Add Children to Map
     [replaced, replacement, features] = nicheCompete(children, fitness, phenotypes, map, d);

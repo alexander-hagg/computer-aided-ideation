@@ -48,7 +48,7 @@ y1 = 0.5*sin(t);
 d.base = [theta;rho];
 
 % Fitness function
-d.fitfun                    = @(X) npolyObjective(X,d);
+d.fitfun                    = @(geno,pheno) npolyObjective(geno,pheno);
 d.fitnessRange              = [0 1];
 
 % Genotypic ranges

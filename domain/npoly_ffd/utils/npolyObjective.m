@@ -1,8 +1,8 @@
-function [fitness,values,phenotypes] = npolyObjective(genomes,d)
+function [fitness,phenotypes] = npolyObjective(genomes,phenotypes)
 %npolyObjective - domain's single-objective fitness function
 % The GUI currently works with normalized fitness only.
 %
-% Syntax:  [fitness,values,phenotypes] = npolyObjective(genomes,d)
+% Syntax:  [fitness,phenotypes] = npolyObjective(genomes,d)
 %
 % Inputs:
 %    genomes        - [NxM] - N genomes with dof = M
@@ -10,8 +10,6 @@ function [fitness,values,phenotypes] = npolyObjective(genomes,d)
 %
 % Outputs:
 %    fitness        - [Nx1] - Validation flags
-%    values         - cell[?] - may contain extra values extracted from
-%                               fitness function
 %    phenotypes     - cell[Nx1] - phenotypes (to prevent recalculating
 %                                 of phenotypes, we offer them back here
 %
@@ -23,8 +21,6 @@ function [fitness,values,phenotypes] = npolyObjective(genomes,d)
 %
 %------------- BEGIN CODE --------------
 
-values = [];
-phenotypes = getPhenotype(genomes,d);
 fitness = zeros(length(phenotypes),1);
 for i=1:length(phenotypes)
     if phenotypes{i}.NumRegions == 0

@@ -1,4 +1,4 @@
-function prediction = predictGP(gpModel, input )
+function prediction = predictGP(gpModel, input)
 %predictGP - Produces predictions of output of given inputs
 % Given training input and output, parameters and hyperParameters, predicts
 % output of new inputs, with mean and variance

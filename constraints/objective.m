@@ -1,4 +1,4 @@
-function [adjustedFitness, values, phenotypes] = objective(samples, evalFcn, constraintSet, penaltyWeight, driftThreshold, varargin)
+function [adjustedFitness, values, phenotypes] = objective(samples, evalFcn, d, constraintSet, penaltyWeight, driftThreshold, varargin)
 %OBJECTIVE User constrained objective function
 % This objective function allows adding user constraints, as soft and hard
 % constraints
@@ -26,14 +26,21 @@ function [adjustedFitness, values, phenotypes] = objective(samples, evalFcn, con
 %
 %------------- BEGIN CODE --------------
 vis = false;
-if nargin > 5
+if nargin > 6
     if ~isempty(varargin{1})
         figHandle = varargin{1};
         vis = true;
     end
 end
 
-[fitness,values,phenotypes] = evalFcn(samples);
+phenotypes = getPhenotype(samples,d);
+
+% First case: evalFcn is the prediction created by surrogate model
+if isa(evalFcn,'double')
+    fitness = evalFcn(:,1)';
+else
+    fitness = evalFcn(samples,phenotypes);
+end
 
 offSetScalar = 1.1;
 
@@ -71,9 +78,9 @@ if ~isempty(constraintSet)
     end
 end
 
-values{end+1} = fitnessAdjustment';
-values{end+1} = drift';
-values{end+1} = phenotypes;
+values{1} = fitnessAdjustment';
+values{2} = drift';
+values{3} = phenotypes;
 
 adjustedFitness = (fitness .* fitnessAdjustment'.^(penaltyWeight))';
 adjustedFitness(outOfBounds) = nan;
