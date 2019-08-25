@@ -1,8 +1,16 @@
 function demoAE(app)
 %% Get phenotypes from map
 genes = app.map{1}.genes;
+fitness = app.map{1}.fitness;
 genes = reshape(genes,[],size(genes,3));
+fitness = reshape(fitness,size(fitness,1)*size(fitness,2),[]);
+fitness(any(isnan(genes')),:) = [];
 genes(any(isnan(genes')),:) = [];
+
+lowFitness = fitness<0.8;
+fitness(lowFitness) = [];
+genes(lowFitness,:) = [];
+
 phenotypes = getPhenotype(genes,app.d{1});
 %% Convert phenotypes into images
 
@@ -57,7 +65,7 @@ sfx = sprintfc('%d', opts.hiddenSizes);
 sfx = [sfx{1} '-' sfx{2} '-' sfx{3}];
 opts.expDir = fullfile('models', ['QD-' sfx '-' opts.optim]);
 
-%% optimization parameters
+% optimization parameters
 opts.train = struct() ;
 opts.train.gpus = opts.gpus; 
 opts.train.numEpochs = 200;
@@ -65,7 +73,7 @@ opts.train.batchSize = 1024;
 opts.train.derOutputs = {'NLL', 1, 'KLD', 1};
 
 
-%% initialize model 
+% initialize model 
 rng(0);
 net = init_model(opts.hiddenSizes(1), opts.hiddenSizes(2), opts.hiddenSizes(3));
 
@@ -101,8 +109,8 @@ net.removeLayer('split');
 net.removeLayer('sample');
 
 
-ny = 100;
-nx = 100;
+ny = 25;
+nx = 25;
 %Ys = icdf('normal', linspace(0,1,ny+2), 0, 1); Ys = Ys(2:end-1);
 %s = icdf('normal', linspace(0,1,nx+2), 0, 1); Xs = Xs(2:end-1);
 Ys = linspace(-3,3,ny); 
