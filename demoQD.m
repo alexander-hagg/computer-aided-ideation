@@ -18,7 +18,7 @@ clear;clc;
 DOF = 16;
 DOMAIN = 'npoly_ffd';
 ALGORITHM = 'grid';
-nIters = 2;
+nIters = 1;
 nPrototypes = 10;
 
 addpath(genpath('.'));

@@ -15,9 +15,9 @@ function p = defaultParamSet(varargin)
 %
 %------------- BEGIN CODE --------------
 
-p.numInitSamples            = 2^5;      % number of initial samples
-p.nGens                     = 2^8;       % number of generations
-p.nChildren                 = 2^5;      % number of children per generation
+p.numInitSamples            = 2^6;      % number of initial samples
+p.nGens                     = 2^11;       % number of generations
+p.nChildren                 = 2^6;      % number of children per generation
 p.mutSigma                  = 0.1;      % mutation drawn from Gaussian distribution with this \sigma
 p.featureResolution         = [50,50];  % Resolution of the map (in cells per dimension). Keep it square
 p.extraMapValues            = {'fitnessAdjustment','drift'}; % extra map values used in map struct
@@ -29,8 +29,8 @@ p.driftThreshold            = 0.5;      % User selection drift, threshold for ha
 
 % Visualization and management of saved data 
 p.display.illu              = true;
-p.display.illuMod           = 25;
-p.numMaps2Save              = 25;
+p.display.illuMod           = 100;
+p.numMaps2Save              = 100;
 
 end
 
