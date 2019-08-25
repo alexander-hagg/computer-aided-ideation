@@ -14,34 +14,28 @@ genes(lowFitness,:) = [];
 phenotypes = getPhenotype(genes,app.d{1});
 %% Convert phenotypes into images
 
-res = 50;
-images = [];
+res = 100;
+images = zeros(length(phenotypes),res,res);
 for i=1:length(phenotypes)
     if ~mod(i,50); disp(i);end
-    x = phenotypes{i}.Vertices(:,1)';
-    y = phenotypes{i}.Vertices(:,2)';
-    x = x(~isnan(x));
-    y = y(~isnan(y));
-    x(end+1) = x(1);
-    y(end+1) = y(1);
-    x = (x + 1)/2;
-    y = (y+1)/2;
-    centerX = (max(x)+min(x))/2;
-    centerY = (max(y)+min(y))/2;
-    x = x + (0.5-centerX);
-    y = y + (0.5-centerY);
-    x = x*res; y = y*res;
+    x = phenotypes{i}.Vertices(:,1)'; y = phenotypes{i}.Vertices(:,2)'; % Get vertex coordinates
+    x = x(~isnan(x)); y = y(~isnan(y));                 % remove NaNs
+    x(end+1) = x(1); y(end+1) = y(1);                   % Close polgyon
+    x = (x + 1)/2; y = (y + 1)/2;                       % move to [0,1]
+    centerX = (max(x)+min(x))/2; centerY = (max(y)+min(y))/2; % Get centers
+    x = x + (0.5-centerX); y = y + (0.5-centerY);       % Center
+    x = x*res; y = y*res;                               % Blow up to pixel resolution
     bw = poly2mask(x,y,res,res);
     
-    %im = imshow(bw);
     images(i,:,:) = single(bw);
-    %drawnow;
 end
 
 
 %% Prepare data
 rdata = permute(images,[2 3 1]);
-imwrite(1-tile_image(rdata), 'report/res/samples.png');
+rdataCopy = rdata(:,:,1:roundn(size(rdataCopy,3),3));
+imgData = tile_image(rdataCopy);
+imwrite(1-imgData, 'report/res/samples.png');
 rdata = reshape(rdata,size(rdata,1)*size(rdata,2),size(rdata,3));
 rawdata = [];
 rawdata(1,1,:,:) = rdata;
@@ -56,7 +50,7 @@ imdb.images.data = data;
 imdb.images.set = vertcat(ones(size(train, 4), 1), ...
                           2*ones(size(valid, 4), 1));
                       
-%% Train Variational Autoencoder
+% Train Variational Autoencoder
 
 opts.optim = 'ADAM';
 opts.gpus = [1];
@@ -69,7 +63,7 @@ opts.expDir = fullfile('models', ['QD-' sfx '-' opts.optim]);
 opts.train = struct() ;
 opts.train.gpus = opts.gpus; 
 opts.train.numEpochs = 200;
-opts.train.batchSize = 1024;
+opts.train.batchSize = 2048;
 opts.train.derOutputs = {'NLL', 1, 'KLD', 1};
 
 
@@ -127,10 +121,21 @@ prob = gather(squeeze(prob));
 prob = reshape(prob, [res,res,size(prob,2)]);
 prob = permute(prob, [2,1,3]);
 
-%imagesc(tile_image(prob));
-%axis image;
-%caxis([0, 1]);
-imwrite(1-tile_image(prob), 'report/res/manifold.png');
+%%
+img = tile_image(prob>0.5);
+figure(99);hold off;
+img = imshow(1-img);
+hold on;
+rows = size(img.CData,1);
+columns = size(img.CData,2);
+for row = 1 : 50 : rows
+  line([1, columns], [row, row], 'Color', [0.95 0.95 0.95]);
+end
+for col = 1 : 50 : columns
+  line([col, col], [1, rows], 'Color', [0.95 0.95 0.95]);
+end
+saveas(gcf,'report/res/manifold.png')
+%imwrite(img,'report/res/manifold.png');
 
 %% --------------------------------------------------------------------
 function fn = getBatch(opts)
