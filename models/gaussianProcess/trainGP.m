@@ -28,6 +28,7 @@ parse.parse(input,output,d);
 % Remove non-unique samples
 [input,uniqueIDs] = unique(input,'rows');
 output = output(uniqueIDs);
+d.mean = mean(output);
 
 %------------- BEGIN CODE --------------
 GP_model.hyp = minimize_gpml(d.hyp,@gp, -d.functionEvals, @infExact, d.meanfunc, ...

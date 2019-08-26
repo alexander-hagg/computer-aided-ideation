@@ -39,10 +39,7 @@ for iter=1:nIters
     disp(['Illumination']);
     app.p{iter}.infill = infillParamSet;
     [map,fitnessFunction] = initialize(app.constraints,app.d{iter},app.p{iter},surrogateAssistance);
-    profile on
     [app.map{iter},app.surrogate] = sail(map,fitnessFunction,app.p{iter},app.d{iter},app.surrogate);
-    profile off
-    profile viewer
     predictedOptima = reshape(app.map{iter}.genes,[],app.d{iter}.dof);
     trueFitness = fitnessFunction(predictedOptima,app.d{iter}.fitfun,0);
     trueMap = app.map{iter};

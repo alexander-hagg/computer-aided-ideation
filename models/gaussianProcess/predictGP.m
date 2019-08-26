@@ -36,5 +36,4 @@ p = gpModel.params;
 prediction(:,1) = m;
 prediction(:,2) = s2;
 
-
 %------------- END OF CODE --------------

@@ -49,11 +49,6 @@ while nSamples <= p.infill.nTotalSamples
     %    p.infill.model.functionEvals = 100;
     %end
     model = trainGP(observation,trueFitness,p.infill.modelParams);
-    
-    % Save found model parameters and new acquisition function
-    %for iModel=1:size(value,2)
-    %    if strcmp(d.paramsAcq{iModel}.name,'GP'); d.paramsAcq{iModel}.hyp = model{iModel}.hyp; end
-    %end
     acqFunction = createAcquisitionFcn(fitnessFunction,model,d);
     
     % After final model is created no more infill is necessary
