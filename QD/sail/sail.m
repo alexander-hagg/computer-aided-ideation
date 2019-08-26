@@ -1,4 +1,4 @@
-function predMap = sail(acqMap,fitnessFunction,p,d,varargin)
+function [predMap,modelPred] = sail(acqMap,fitnessFunction,p,d,varargin)
 %SAIL - Surrogate Assisted Illumination Algorithm
 % Main run script of SAIL algorithm
 %
@@ -7,26 +7,35 @@ function predMap = sail(acqMap,fitnessFunction,p,d,varargin)
 % email: adam.gaier@h-brs.de, alexander.hagg@h-brs.de
 % Nov 2016; Last revision: 23-Aug-2019
 if p.display.illu
-    if nargin > 4; figHandleAcqMap = varargin{1};else;f=figure(4);clf(f);figHandleAcqMap = axes; end
-    title(figHandleAcqMap,'Acquisition Fcn Values'); drawnow;
-    if nargin > 5; figHandleMap = varargin{2};else;f=figure(1);clf(f);figHandleMap = axes; end
-    if nargin > 6; figHandleTotalFit = varargin{3};else;f=figure(2);clf(f);figHandleTotalFit = axes;end
-    if nargin > 7; figHandleMeanDrift = varargin{4};else;f=figure(3);clf(f);figHandleMeanDrift = axes;end
+    surrogate = []; if nargin > 4; surrogate = varargin{1}; end
+    if nargin > 5; figHandleAcqMap = varargin{2};else;f=figure(4);clf(f);figHandleAcqMap = axes; end
+    title(figHandleAcqMap,'Acquisition Fcn'); drawnow;
+    if nargin > 6; figHandleMap = varargin{3};else;f=figure(1);clf(f);figHandleMap = axes; end
+    if nargin > 7; figHandleTotalFit = varargin{4};else;f=figure(2);clf(f);figHandleTotalFit = axes;end
+    if nargin > 8; figHandleMeanDrift = varargin{5};else;f=figure(3);clf(f);figHandleMeanDrift = axes;end
     
 end
-
-p.infill = infillParamSet;
 
 p.predMapResolution = p.featureResolution;
 p.featureResolution = p.infill.featureResolution;
 
-observation = reshape(acqMap.genes,[],d.dof);
-valid = all(~isnan(observation)');
-observation = observation(valid,:);
-nSamples = size(observation,1);
-p.numInitSamples = nSamples; %Reduce to valid solutions ... bit hacky
-trueFitness = reshape(acqMap.fitness,numel(valid),[]);
-trueFitness = trueFitness(valid,:);
+if isempty(surrogate)
+    observation = reshape(acqMap.genes,[],d.dof);
+    valid = all(~isnan(observation)');
+    observation = observation(valid,:);
+    nSamples = size(observation,1);
+    p.numInitSamples = nSamples; %Reduce to valid solutions ... bit hacky
+    trueFitness = reshape(acqMap.fitness,numel(valid),[]);
+    trueFitness = trueFitness(valid,:);
+else
+    observation = surrogate.trainInput;
+    nSamples = size(observation,1);
+    p.numInitSamples = nSamples;
+    trueFitness = surrogate.trainOutput;
+end
+
+% Calculate how many samples we need to acquire
+p.infill.nTotalSamples = nSamples + p.infill.nAddSamplesPerIteration;
 
 parents = observation;
 p.infill.modelParams = paramsGP(size(observation,2));
@@ -35,10 +44,10 @@ while nSamples <= p.infill.nTotalSamples
     % Surrogate models are created from all evaluated samples, and these
     % models are used to produce an acquisition function.
     % Only retrain model parameters every 'p.trainingMod' iterations
-    p.infill.model.functionEvals = 0;
-    if (nSamples==p.numInitSamples || mod(nSamples,p.infill.trainingMod*p.infill.nAdditionalSamples))
-        p.infill.model.functionEvals = 100;
-    end
+    p.infill.model.functionEvals = 100;
+    %if (nSamples==p.numInitSamples || mod(nSamples,p.infill.trainingMod*p.infill.nAdditionalSamples))
+    %    p.infill.model.functionEvals = 100;
+    %end
     model = trainGP(observation,trueFitness,p.infill.modelParams);
     
     % Save found model parameters and new acquisition function
@@ -48,7 +57,7 @@ while nSamples <= p.infill.nTotalSamples
     acqFunction = createAcquisitionFcn(fitnessFunction,model,d);
     
     % After final model is created no more infill is necessary
-    if nSamples == p.infill.nTotalSamples; break; end
+    if nSamples >= p.infill.nTotalSamples; break; end
     
     %% 2 - Illuminate Acquisition Map
     % A map is constructed using the evaluated samples which are evaluated
@@ -130,22 +139,22 @@ while nSamples <= p.infill.nTotalSamples
             newValue(nanIndx,:) = measuredValue;
         end
         
-        %if p.retryInvalid
+        if p.infill.retryInvalid
             % Check for invalid or duplicate shapes
-            %nanValue = any(isnan(newValue),2);
-            %oldDuplicate = logical(false(1,size(nanValue,1)));
-            %oldDuplicate(nanIndx) = any(pdist2(observation,nextGenes)==0);
-            %newDuplicate = logical(false(1,size(nanValue,1)));
-            %sampleDistances = pdist2(nextGenes,nextGenes);
-            %sampleDistances = sampleDistances + diag(ones(1,size(sampleDistances,1)));
-            %newDuplicate(nanIndx) = any(sampleDistances==0);
-            %noValue = nanValue | oldDuplicate' | newDuplicate';
-        %else
+            nanValue = any(isnan(newValue),2);
+            oldDuplicate = logical(false(1,size(nanValue,1)));
+            oldDuplicate(nanIndx) = any(pdist2(observation,nextGenes)==0);
+            newDuplicate = logical(false(1,size(nanValue,1)));
+            sampleDistances = pdist2(nextGenes,nextGenes);
+            sampleDistances = sampleDistances + diag(ones(1,size(sampleDistances,1)));
+            newDuplicate(nanIndx) = any(sampleDistances==0);
+            noValue = nanValue | oldDuplicate' | newDuplicate';
+        else
             % Do not try invalid shapes
             newValue(isnan(newValue(:,1)),:) = repmat([0 0],sum(isnan(newValue(:,1))),1);
             % We still have to skip samples from empty bins
             noValue = any(isnan(nextGenes),2);
-        %end
+        end
         nextObservation(nanIndx,:) = nextGenes;         %#ok<AGROW>
         sobPoint = sobPoint + length(newSampleRange);   % Increment sobol sequence for next samples
     end
@@ -179,6 +188,6 @@ function visualizeStats(figHandle,map,d,nSamples)
 cla(figHandle);
 caxis(figHandle,[0 max(map.fitness(:))]);
 viewMap(map,d,figHandle);
-title(figHandle,['Predicted Acquisition Fitness w. ' int2str(nSamples) ' samples']);
+title(figHandle,['Acquisition Fcn w. ' int2str(nSamples) ' samples']);
 drawnow;
 end

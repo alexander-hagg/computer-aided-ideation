@@ -22,12 +22,14 @@ nIters = 2;
 nPrototypes = 10;
 
 addpath(genpath('.'));
-iter = 1; app.selectedPrototypes = {}; app.constraints = {}; app.d = {}; app.p = {};
+app.selectedPrototypes = {}; app.constraints = {}; app.d = {}; app.p = {};
 rmpath(genpath('domain')); addpath(genpath(['domain/' DOMAIN]));
-app.d{iter} = domain(DOF);
-
+app.d{1} = domain(DOF);
 rmpath('QD/grid'); rmpath('QD/voronoi'); addpath(['QD/' ALGORITHM]);
-app.p{iter} = defaultParamSet(4);
+app.p{1} = defaultParamSet(4);
+app.surrogate = [];
+
+surrogateAssistance = true;
 
 %% Main loop
 for iter=1:nIters
@@ -35,9 +37,12 @@ for iter=1:nIters
     
     %% I) Illumination with QD
     disp(['Illumination']);
-    
-    [map,fitnessFunction] = initialize(app.constraints,app.d{iter},app.p{iter},true);
-    app.map{iter} = sail(map,fitnessFunction,app.p{iter},app.d{iter});
+    app.p{iter}.infill = infillParamSet;
+    [map,fitnessFunction] = initialize(app.constraints,app.d{iter},app.p{iter},surrogateAssistance);
+    profile on
+    [app.map{iter},app.surrogate] = sail(map,fitnessFunction,app.p{iter},app.d{iter},app.surrogate);
+    profile off
+    profile viewer
     predictedOptima = reshape(app.map{iter}.genes,[],app.d{iter}.dof);
     trueFitness = fitnessFunction(predictedOptima,app.d{iter}.fitfun,0);
     trueMap = app.map{iter};
@@ -74,5 +79,9 @@ for iter=1:nIters
         
         f=figure(6);clf(f);figHandle=axes;cla(figHandle); showHistory(app.constraints,app.classification,app.d{iter},figHandle);
     end
+    
+    %% OPTIONAL (TODO)
+    % % V) Select which samples in the model are within the selection?
+    %  ----> use [drift,simspacePredictions] = getUserDrift(samples,c)
 end
 %------------- END CODE --------------
